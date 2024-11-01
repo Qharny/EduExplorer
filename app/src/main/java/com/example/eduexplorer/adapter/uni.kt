@@ -1,3 +1,10 @@
+import android.content.Intent
+import android.net.Uri
+import android.view.LayoutInflater
+import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
+import com.example.eduexplorer.data.model.University
+
 class UniversityAdapter : RecyclerView.Adapter<UniversityAdapter.UniversityViewHolder>() {
     private var universities = listOf<University>()
 

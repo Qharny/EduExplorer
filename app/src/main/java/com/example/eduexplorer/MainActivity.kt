@@ -1,47 +1,75 @@
 package com.example.eduexplorer
 
+import android.content.Context
 import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.eduexplorer.ui.theme.EduExplorerTheme
+import android.view.View
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
+import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.eduexplorer.adapter.UniversityAdapter
+import com.example.eduexplorer.databinding.ActivityMainBinding
+import com.example.eduexplorer.viewmodel.UniversityViewModel
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityMainBinding
+    private val viewModel: UniversityViewModel by viewModels()
+    private val adapter = UniversityAdapter()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            EduExplorerTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        setupRecyclerView()
+        setupSearchView()
+        observeViewModel()
+    }
+
+    private fun setupRecyclerView() {
+        binding.universitiesRecyclerView.apply {
+            adapter = this@MainActivity.adapter
+            layoutManager = LinearLayoutManager(this@MainActivity)
+        }
+    }
+
+    private fun setupSearchView() {
+        binding.searchEditText.setOnEditorActionListener { v, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                val query = v.text.toString().trim()
+                if (query.isNotEmpty()) {
+                    viewModel.fetchUniversities(query)
+                    hideKeyboard()
                 }
+                true
+            } else {
+                false
             }
         }
     }
-}
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+    private fun observeViewModel() {
+        viewModel.universities.observe(this) { universities ->
+            adapter.submitList(universities)
+        }
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    EduExplorerTheme {
-        Greeting("Android")
+        viewModel.isLoading.observe(this) { isLoading ->
+            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+        }
+
+        viewModel.error.observe(this) { error ->
+            error?.let {
+                Toast.makeText(this, it, Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    private fun hideKeyboard() {
+        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        currentFocus?.let {
+            imm.hideSoftInputFromWindow(it.windowToken, 0)
+        }
     }
 }

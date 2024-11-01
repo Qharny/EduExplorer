@@ -1,4 +1,11 @@
-// Data class for University
+package com.example.eduexplorer.data.model
+
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.google.gson.annotations.SerializedName
+
 data class University(
     val name: String,
     val country: String,

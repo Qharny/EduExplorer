@@ -19,6 +19,7 @@
             android:theme="@style/Theme.EduExplorer">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+                <uses-permission android:name="android.permission.INTERNET" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
